@@ -1,2 +1,2 @@
 # AuthPage
-An python authentication/licensing system for windows with Dearpygui UI
+A python authentication/licensing system using Cryptolens and Dearpygui as UI
