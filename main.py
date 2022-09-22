@@ -1,4 +1,3 @@
-from re import L
 import dearpygui.dearpygui as dpg
 from dearpygui.demo import show_demo
 from licensing.models import *
@@ -6,6 +5,8 @@ from licensing.methods import Key, Helpers
 import os
 import ctypes
 import sys
+import requests
+import urllib.request as urllib2
 
 WIN_WIDTH = 500
 WIN_HEIGHT = 400
@@ -26,6 +27,14 @@ result = Key.activate(token=auth,\
 
 #	HIWCK-BVMNM-IARBB-QAHLH
 
+def check_connnection():
+    try:
+        urllib2.urlopen('http:google.com', timeout=1)
+        return True
+    except urllib2.URLError as err:
+        return False
+
+
 dpg.create_context()
 
 def key_cb(s,d):
@@ -34,6 +43,12 @@ def key_cb(s,d):
 
 def login_cb(s,d):
     global result
+    
+    if(check_connnection):
+        pass;
+    else:
+        pass;
+
     result = Key.activate(token=auth,\
                 rsa_pub_key=RSAPubKey,\
                 product_id=16868, \
@@ -41,33 +56,31 @@ def login_cb(s,d):
                 machine_code=Helpers.GetMachineCode(v=2))
 
     if result[0] == None or not Helpers.IsOnRightMachine(result[0], v=2):
-        #dpg.show_item(auth_fail_text)
-        ctypes.windll.user32.MessageBoxW(0, "Failed", "Auth", 0)
+        dpg.show_item(auth_fail_text)
+        dpg.delete_item(item=main_win)
+        dpg.show_item(item=win2)
+        dpg.set_primary_window(win2, True)
+
+        #ctypes.windll.user32.MessageBoxW(0, "Failed", "Auth", 0)
     else:
+        pass
         #dpg.show_item(auth_pass_text)
-        ctypes.windll.user32.MessageBoxW(0, "Success", "Auth", 0)
+        #ctypes.windll.user32.MessageBoxW(0, "Success", "Auth", 0)
 
-
-
-with dpg.font_registry():
-    title_font = dpg.add_font('C:\Windows\Fonts\Kayak Sans Bold.otf', 20)
-    default_font = dpg.add_font('C:\Windows\Fonts\Kayak Sans Bold.otf', 18)
 
 with dpg.window(width = WIN_WIDTH, height = WIN_HEIGHT, no_title_bar=True, no_resize=True, no_move=True) as main_win:
-    dpg.bind_font(default_font)
 
     title_text = dpg.add_text("Simple Auth Page")
     local_key = dpg.add_input_text(label='Auth key:', callback=key_cb)
     dpg.add_button(label='Login', callback=login_cb)
 
 
-
-
     auth_fail_text = dpg.add_text('Failed', show=False, tag='a')
     auth_pass_text = dpg.add_text('Success', show=False, tag='b')
 
-with dpg.window(width = WIN_WIDTH, height = WIN_HEIGHT, no_title_bar=True, no_resize=True, no_move=True, show=False) as win_2:
-    dpg.bind_font(default_font)
+with dpg.window(width = WIN_WIDTH, height = WIN_HEIGHT, no_title_bar=True, no_resize=True, no_move=True, show=False) as win2:
+    title_text = dpg.add_text('welcome')
+
 
 #apply_main_theme()
 
