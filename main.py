@@ -2,20 +2,18 @@ import dearpygui.dearpygui as dpg
 from dearpygui.demo import show_demo
 from licensing.models import *
 from licensing.methods import Key, Helpers
-import time
-import ctypes
-import sys
-#import requests
-import urllib.request as urllib2
 from AuthHelper import AuthHelper
-
+import time
+import os
 
 iconfig = {
     'WIN_WIDTH': 500,
-    'WIN_HEIGHT': 400
+    'WIN_HEIGHT': 400,
+    'CUR_FILE_PATH': os.path.dirname(os.path.realpath(__file__))
 }
 
 local_key = ''
+expiration = ''
 
 dpg.create_context()
 
@@ -24,9 +22,11 @@ def key_cb(s,d):
     local_key = dpg.get_value(s)
 
 def login_cb(s,d):
-    product_id = 17806
-    RSAPubKey = '<RSAKeyValue><Modulus>h9XdlkrJJqAKK7pLHUvCSf4RJVPwjEl51TvzJuv9hmwVjm3WlpOgBBZSSiwrlq2FHv8aHbrXks1KbWcMqiKiAjnVuI+R/OCK305aoS2fiVPyJph2cJXSgFsB3fpTn7W5mV6RhWvVko0hvlmIZckeArVNslRFKmXRCTRcFNObfJwJbZFisPZsoVTKLGG5yYo75t4Bc7/qJyOVMvIq38oRCwe7cVpOrk9GcQfaoR6ojX+Xvg6BZ2LyjppRHDOlKQvs/bKjtCD/HD0LkuwvhzTH2i4tkhKkBPVTN6JE1iZSRO50f5pn6DviaDd015zBT95S4qdJYMsWl2x7dW/vjBX/hw==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>'
-    access_token = 'WyIzMTQ0MzkxOCIsIlpLM24zaC9uUlhXSTB6M0JWMStJb0svU21LMy9KUTZZVnpaZzhib1IiXQ=='
+    #Your RSAPublicKey, Access Token, and ProductID from Cryptolens
+    global expiration
+    RSAPubKey = ''
+    access_token = ''
+    product_id = 17808
     auth = AuthHelper(access_token, RSAPubKey, product_id)
 
     if auth.authorize(local_key) == False:
@@ -36,22 +36,41 @@ def login_cb(s,d):
     else:
         dpg.show_item(auth_pass_text)
         time.sleep(.5)
+        expiration = auth.get_expiration()
         dpg.delete_item(item=main_win)
         dpg.show_item(item=win2)
         dpg.set_primary_window(win2, True)
 
+with dpg.font_registry():
+    title_font1 = dpg.add_font(iconfig['CUR_FILE_PATH'] + '\Fonts\OpenSans-Bold.ttf', 34)
+    default_font = dpg.add_font(iconfig['CUR_FILE_PATH'] + '\Fonts\OpenSans-SemiBold.ttf', 20)
+    icon_font = dpg.add_font(iconfig['CUR_FILE_PATH'] + '\Fonts\heydings_controls.ttf', 24)
 
 with dpg.window(width = iconfig['WIN_WIDTH'], height = iconfig['WIN_HEIGHT'], no_title_bar=True, no_resize=True, no_move=True) as main_win:
+    dpg.bind_font(default_font)
+
     title_text = dpg.add_text("Simple Auth Page")
-    local_key = dpg.add_input_text(label='Auth key:', callback=key_cb)
-    dpg.add_button(label='Login', callback=login_cb)
+    dpg.bind_item_font(title_text, title_font1)
+
+    dpg.add_spacing(count=2, parent=main_win)
+
+    dpg.bind_font(default_font)
+    dpg.add_text("Enter your Auth Key Below:")
+    local_key = dpg.add_input_text(label='', callback=key_cb)
+
+    dpg.add_spacing(count=1, parent=main_win)
+    dpg.add_button(label='Login', callback=login_cb, width=120)
 
     auth_fail_text = dpg.add_text('Login Failed', show=False)
     auth_pass_text = dpg.add_text('Success', show=False)
 
 with dpg.window(width = iconfig['WIN_WIDTH'], height = iconfig['WIN_HEIGHT'], no_title_bar=True, no_resize=True, no_move=True, show=False) as win2:
-    title_text = dpg.add_text('welcome')
+    dpg.bind_font(default_font)
 
+    title_text = dpg.add_text("Successful")
+    dpg.bind_item_font(title_text, title_font1)
+
+    dpg.add_text("Your license expires on: " + expiration)
 
 #apply_main_theme()
 #show_demo()
